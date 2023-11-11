@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace = "kr.co.dong.mypage.mypageMapper">
+
+<!-- 대여리스트 페이징 -->
+    <select id="getTotalCount1" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM mypage_book
+        WHERE rentalex=0 and id =#{id};
+    </select>
+
+   <select id="getListByRange1" resultType="kr.co.dong.mypage.MypageDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM mypage_book
+    WHERE rentalex=0 and id =#{id}
+    <if test="keyword != null and keyword != ''">
+        AND (
+            rentalnum LIKE CONCAT('%', #{keyword}, '%')
+            OR booknum LIKE CONCAT('%', #{keyword}, '%')
+            OR bookname LIKE CONCAT('%', #{keyword}, '%')
+            OR rentalday LIKE CONCAT('%', #{keyword}, '%')
+            OR returndate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'rentalnum'">rentalnum ASC</when>
+        <when test="sortBy eq 'rentalnumDesc'">rentalnum DESC</when>
+        <when test="sortBy eq 'booknumDesc'">booknum DESC</when>
+        <when test="sortBy eq 'booknum'">booknum ASC</when>
+        <when test="sortBy eq 'rentaldayDesc'">rentalday DESC</when>
+        <when test="sortBy eq 'rentalday'">rentalday ASC</when>
+        <when test="sortBy eq 'returndate'">returndate ASC</when>
+        <when test="sortBy eq 'returndateDesc'">returndate DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN rentalex = 0 THEN 0 ELSE 1 END, rentalnum DESC</when>
+        <otherwise>CASE WHEN rentalex = 0 THEN 0 ELSE 1 END, rentalnum DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+<!-- 연장버튼 -->
+<update id="extendDate">
+  UPDATE mypage_book
+  SET returndate = DATE_ADD(returndate, INTERVAL 7 DAY), extend=1
+  WHERE rentalnum = #{rentalnum} and extend=0;
+</update>
+
+<!-- 반납 -->
+<update id="returngo">
+	update mypage_book
+	set returnday=now(), rentalex=1
+	where rentalnum = #{rentalnum};
+</update>
+
+<!-- 반납리스트 페이징 -->
+    <select id="getTotalCount" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM mypage_book
+        WHERE rentalex=1 and id =#{id};
+    </select>
+
+   <select id="getListByRange" resultType="kr.co.dong.mypage.MypageDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM mypage_book
+    WHERE rentalex=1 and id =#{id}
+    <if test="keyword != null and keyword != ''">
+        AND (
+            rentalnum LIKE CONCAT('%', #{keyword}, '%')
+            OR booknum LIKE CONCAT('%', #{keyword}, '%')
+            OR bookname LIKE CONCAT('%', #{keyword}, '%')
+            OR rentalday LIKE CONCAT('%', #{keyword}, '%')
+            OR returnday LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'rentalnum'">rentalnum ASC</when>
+        <when test="sortBy eq 'rentalnumDesc'">rentalnum DESC</when>
+        <when test="sortBy eq 'booknumDesc'">booknum DESC</when>
+        <when test="sortBy eq 'booknum'">booknum ASC</when>
+        <when test="sortBy eq 'rentaldayDesc'">rentalday DESC</when>
+        <when test="sortBy eq 'rentalday'">rentalday ASC</when>
+        <when test="sortBy eq 'returnday'">returnday ASC</when>
+        <when test="sortBy eq 'returndayDesc'">returnday DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN rentalex = 1 THEN 0 ELSE 1 END, rentalnum DESC</when>
+        <otherwise>CASE WHEN rentalex = 1 THEN 0 ELSE 1 END, rentalnum DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+<update id="returnbook">
+	update book
+	set bookcnt = bookcnt + 1
+	where booknum = #{booknum};
+</update>
+
+<!-- 회원탈퇴 -->
+<update id="myDelete">
+	update member
+	set state=3
+	where id =#{id};
+</update>
+
+
+<select id="memberDetail" resultType="MemberDTO">
+	select *
+	from member
+	where id =#{id};
+</select>
+
+<update id="myUpdate">
+	update member
+	set name=#{name}, pw=#{pw}, email=#{email}, birth=#{birth}, tel=#{tel}, roadAddress=#{roadAddress}, jibunAddress=#{jibunAddress}, detailAddress=#{detailAddress}, extraAddress=#{extraAddress}, postcode=#{postcode}
+	where id=#{id};
+</update>
+
+<!-- 내게시글 페이징 -->
+    <select id="getTotalCount2" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM board
+        WHERE del=1 and id =#{id};
+    </select>
+
+   <select id="getListByRange2" resultType="kr.co.dong.board.BoardDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM board
+    WHERE del=1 and id =#{id}
+    <if test="keyword != null and keyword != ''">
+        AND (
+            bno LIKE CONCAT('%', #{keyword}, '%')
+            OR type LIKE CONCAT('%', #{keyword}, '%')
+            OR likecnt LIKE CONCAT('%', #{keyword}, '%')
+            OR viewcnt LIKE CONCAT('%', #{keyword}, '%')
+            OR regdate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'bno'">bno ASC</when>
+        <when test="sortBy eq 'bnoDesc'">bno DESC</when>
+        <when test="sortBy eq 'typeDesc'">type DESC</when>
+        <when test="sortBy eq 'type'">type ASC</when>
+        <when test="sortBy eq 'likecntDesc'">likecnt DESC</when>
+        <when test="sortBy eq 'likecnt'">likecnt ASC</when>
+        <when test="sortBy eq 'viewcntDesc'">viewcnt DESC</when>
+        <when test="sortBy eq 'viewcnt'">viewcnt ASC</when>
+        <when test="sortBy eq 'regdate'">regdate ASC</when>
+        <when test="sortBy eq 'regdateDesc'">regdate DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN del=1 THEN 0 ELSE 1 END, bno DESC</when>
+        <otherwise>CASE WHEN del=1 THEN 0 ELSE 1 END, bno DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+<!-- 내댓글 페이징 -->
+    <select id="getTotalCount3" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM com_board
+        WHERE del=1 and id =#{id}
+    </select>
+
+   <select id="getListByRange3" resultType="kr.co.dong.reply.ReplyDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM com_board
+    WHERE del=1 and id =#{id}
+    <if test="keyword != null and keyword != ''">
+        AND (
+            bno LIKE CONCAT('%', #{keyword}, '%')
+            OR dno LIKE CONCAT('%', #{keyword}, '%')
+            OR ddate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'bno'">bno ASC</when>
+        <when test="sortBy eq 'bnoDesc'">bno DESC</when>
+        <when test="sortBy eq 'dnoDesc'">dno DESC</when>
+        <when test="sortBy eq 'dno'">dno ASC</when>
+        <when test="sortBy eq 'ddate'">ddate ASC</when>
+        <when test="sortBy eq 'ddateDesc'">ddate DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN del=1 THEN 0 ELSE 1 END, dno DESC</when>
+        <otherwise>CASE WHEN del=1 THEN 0 ELSE 1 END, dno DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+<!-- 내문의내역 상세조회-->
+<select id="helpDetail" parameterType="java.util.Map" resultType="HelpDTO">
+	select *
+	from help_board
+	where hno=#{hno} and id =#{id}
+	order by hno desc;
+</select>
+
+<!-- 내문의내역 리스트 페이징 -->
+    <select id="getTotalCount4" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM help_board
+        WHERE del=1 and id =#{id}
+    </select>
+
+   <select id="getListByRange4" resultType="kr.co.dong.help.HelpDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM help_board
+    WHERE del=1 and id =#{id}
+    <if test="keyword != null and keyword != ''">
+        AND (
+            hno LIKE CONCAT('%', #{keyword}, '%')
+            OR title LIKE CONCAT('%', #{keyword}, '%')
+            OR state LIKE CONCAT('%', #{keyword}, '%')
+            OR hdate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'title'">title ASC</when>
+        <when test="sortBy eq 'complete'">state DESC</when>
+        <when test="sortBy eq 'hdate'">hdate ASC</when>
+        <when test="sortBy eq 'titleDesc'">title DESC</when>
+        <when test="sortBy eq 'wating'">state ASC</when>
+        <when test="sortBy eq 'hdateDesc'">hdate DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN state = 1 THEN 0 ELSE 1 END, hno DESC</when>
+        <otherwise>CASE WHEN state = 1 THEN 0 ELSE 1 END, hno DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+</mapper>

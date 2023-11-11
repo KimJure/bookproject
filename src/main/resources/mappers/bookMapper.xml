@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.dong.book.bookMapper">
+   <!-- 인기도서 -->
+   <select id="bestlist" resultType="bookDTO">
+      select * from book
+      order by bookrentalcnt desc limit 5;
+   </select>
+   <!-- 신간도서 -->
+   <select id="newlist" resultType="bookDTO">
+      select * from book order by regdate desc limit 3;
+   </select>
+   <!-- 국내=1 도서 -->
+   <select id="origin1list" parameterType="hashMap" resultType="bookDTO">
+      select * from book 
+      <if test='searchtype.equals("bookname")'>
+         where bookorigin=1 and bookname like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("publishr")'>
+         where bookorigin=1 and where publishr like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("author")'>
+         where bookorigin=1 and where author like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("genre")'>
+         where bookorigin=1 and genre like concat('%',#{keyword},'%')
+      </if>
+         order by booknum desc
+         limit #{displayPost},#{postNum};
+   </select>
+   <!-- 국외=2 도서 -->
+   <select id="origin2list" parameterType="hashMap" resultType="bookDTO">
+      select * from book 
+         <if test='searchtype.equals("bookname")'>
+            where bookorigin=2 and bookname like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("publishr")'>
+            where bookorigin=2 and where publishr like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("author")'>
+            where bookorigin=2 and where author like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("genre")'>
+         where bookorigin=2 and genre like concat('%',#{keyword},'%')
+         </if>
+         order by booknum desc
+         limit #{displayPost},#{postNum};
+   </select>
+   <!-- 장르별 검색 -->
+   <select id="genresearch" parameterType="hashMap" resultType="bookDTO">
+      select * from book where
+      genre=#{searchtype} order by booknum desc limit #{displayPost},#{postNum};
+   </select>
+   <!-- 장르별 리스트 -->
+   <select id="genrelist" parameterType="hashMap" resultType="bookDTO">
+      select * from book
+       <if test='searchtype.equals("genre")'>
+        where genre like concat('%', #{keyword}, '%')
+       </if>
+      order by booknum desc
+      limit #{displayPost},#{postNum};
+   </select>
+   <!-- 도서정보 -->
+   <select id="bookdetail" resultType="bookDTO">
+      select * from book where
+      booknum=#{booknum};
+   </select>
+   <!-- 도서리스트 -->
+   <select id="alllist" resultType="bookDTO">
+      select * from book order by booknum desc;
+   </select>
+   <!-- 도서검색 -->
+   <select id="booksearch" resultType="bookDTO">
+      select * from book
+   </select>
+   <!-- 책 갯수 -->
+   <select id="bookcnt" resultType="int">
+      select * from FROM book;
+   </select>
+   <!-- 페이징 리스트 -->
+   <select id="listpage" parameterType="hashMap" resultType="bookDTO">
+      select * from book order by booknum desc
+      limit #{displayPost},#{postNum};
+   </select>
+   <!-- 검색 + 페이징 -->
+   <select id="search" parameterType="hashMap" resultType="bookDTO">
+         select * from book 
+      <if test='searchtype.equals("bookname")'>
+         where bookname like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("publishr")'>
+         where publishr like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("author")'>
+         where author like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("genre")'>
+         where genre like concat('%',#{keyword},'%')
+      </if>
+         order by booknum desc
+         limit #{displayPost},#{postNum};
+   </select>
+   <!-- 검색 카운트 -->
+   <select id="searchcnt" parameterType="hashmap" resultType="int">
+      select count(*) FROM book
+      <if test='searchtype.equals("bookname")'>
+         where bookname like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("publishr")'>
+         where publishr like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("author")'>
+         where author like concat('%',#{keyword},'%')
+      </if>
+      <if test='searchtype.equals("genre")'>
+         where genre like concat('%',#{keyword},'%')
+      </if>
+   </select>
+   <!-- 국내도서카운트 -->
+   <select id="origin1cnt" parameterType="hashmap" resultType="int">
+      select count(*) from book
+      <if test='searchtype.equals("bookname")'>
+            where bookorigin=1 and bookname like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("publishr")'>
+            where bookorigin=1 and where publishr like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("author")'>
+            where bookorigin=1 and where author like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("genre")'>
+            where bookorigin=1 and genre like concat('%',#{keyword},'%')
+         </if>
+   </select> 
+   <!-- 국외도서카운트 -->
+   <select id="origin2cnt" parameterType="hashmap" resultType="int">
+      select count(*) from book
+      <if test='searchtype.equals("bookname")'>
+            where bookorigin=2 and bookname like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("publishr")'>
+            where bookorigin=2 and where publishr like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("author")'>
+            where bookorigin=2 and where author like concat('%',#{keyword},'%')
+         </if>
+         <if test='searchtype.equals("genre")'>
+            where bookorigin=2 and genre like concat('%',#{keyword},'%')
+         </if>
+   </select>
+   <!-- 대여 -->   
+   <update id="bookrental" parameterType="bookDTO">
+      update book set bookrentalcnt=bookrentalcnt+1, bookcnt=bookcnt-1 where booknum=#{booknum};
+   </update> <!-- 대여 마이페이지 등록 -->
+   <insert id="bookrentalinsert" parameterType="MypageDTO">
+      insert into mypage_book (booknum,id,bookname,rentalday,rentalcnt,returndate,rentalex,extend) 
+      values (#{booknum},#{id},#{bookname},now(),+1,date_add(now(),INTERVAL 1 WEEK),0,0);
+   </insert>
+   
+   
+   <insert id="bookInsert"  parameterType="kr.co.dong.book.bookDTO">
+    
+    insert into book (booknum, bookname, publishr, pay, genre, regdate, bookrentalcnt, bookcnt, bookpage, bookcomment, bookorigin, bookmax, country, author)
+    VALUES (#{booknum}, #{bookname}, #{publishr}, #{pay}, #{genre}, curdate(),0, #{bookmax}, #{bookpage}, #{bookcomment}, #{bookorigin}, #{bookmax}, #{country}, #{author})
+
+</insert>
+
+   <!-- 도서 상세 조회 -->
+   <select id="bookDetail" parameterType="java.lang.String" resultType="kr.co.dong.book.bookDTO">
+      select *
+      from book
+      where booknum= #{booknum}
+      limit 1;
+   </select>
+   
+       <!-- 도서 수정 -->
+   <update id="bookUpdate" parameterType="kr.co.dong.book.bookDTO">
+  UPDATE book
+  SET bookname = #{bookname},
+      publishr = #{publishr},
+      pay = #{pay},
+      genre = #{genre},
+      bookrentalcnt = #{bookrentalcnt},
+      bookcnt = #{bookcnt},
+      bookpage = #{bookpage},
+      bookcomment = #{bookcomment},
+      bookorigin = #{bookorigin},
+      bookmax = #{bookmax},
+      author = #{author},
+      country = #{country}
+  WHERE booknum = #{booknum}
+</update>
+
+   <!-- 책 전체 갯수 -->
+    <select id = "getBookCount" parameterType="kr.co.dong.book.bookDTO" resultType="int">
+       select count(*) from book;
+    </select>
+</mapper>

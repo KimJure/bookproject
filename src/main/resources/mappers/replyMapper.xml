@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.co.dong.ReplyMapper">
+  
+  <insert id="ReplyInsert"  parameterType="kr.co.dong.reply.ReplyDTO">
+    INSERT INTO com_board (bno, replynum, id, dcontent, ddate, del)
+SELECT #{bno}, COALESCE(MAX(c.replynum), 0) + 1, #{id}, #{dcontent}, NOW(), 1
+FROM com_board c
+WHERE c.bno = #{bno}
+</insert>
+
+<select id="ReplyList" resultType="kr.co.dong.reply.ReplyDTO">
+    SELECT * FROM com_board 
+    WHERE bno = #{bno} AND del = 1
+    order by ddate desc;
+</select>
+
+   <update id="ReplyUpdate" parameterType = "kr.co.dong.reply.ReplyDTO">
+      update com_board set 
+      dcontent = #{dcontent}
+      where dno = #{dno};
+      
+   </update>
+   
+   
+   <delete id="ReplyDelete" parameterType = "kr.co.dong.reply.ReplyDTO">
+      delete from com_board
+   where dno = #{dno};
+      
+   </delete>
+   
+</mapper>

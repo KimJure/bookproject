@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dong.HelpMapper">
+   
+<insert id="helpRegister"  parameterType="kr.co.dong.help.HelpDTO">
+    
+    insert into help_board (id, title, content, hdate, state, del)
+    VALUES (#{id}, #{title}, #{content}, now(), 1, 1)
+
+</insert>
+
+<select id="helpAnswer" parameterType="java.lang.Integer" resultType="kr.co.dong.help.HelpDTO">
+      select *
+      from help_board
+      where hno= #{hno};
+   </select>
+
+<!-- 문의관리리스트 검색 및 정렬 및 페이징 -->
+    <select id="getTotalCount" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM help_board
+        WHERE state IN (1, 2)
+    </select>
+
+   <select id="getListByRange" resultType="kr.co.dong.help.HelpDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM help_board
+    WHERE state IN (1, 2)
+    <if test="keyword != null and keyword != ''">
+        AND (
+            id LIKE CONCAT('%', #{keyword}, '%')
+            OR id LIKE CONCAT('%', #{keyword}, '%')
+            OR title LIKE CONCAT('%', #{keyword}, '%')
+            OR state LIKE CONCAT('%', #{keyword}, '%')
+            OR hdate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'id'">id ASC</when>
+        <when test="sortBy eq 'title'">title ASC</when>
+        <when test="sortBy eq 'complete'">state DESC</when>
+        <when test="sortBy eq 'hdate'">hdate ASC</when>
+        <when test="sortBy eq 'idDesc'">id DESC</when>
+        <when test="sortBy eq 'titleDesc'">title DESC</when>
+        <when test="sortBy eq 'wating'">state ASC</when>
+        <when test="sortBy eq 'hdateDesc'">hdate DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN state = 1 THEN 0 ELSE 1 END, hno ASC</when>
+        <otherwise>CASE WHEN state = 1 THEN 0 ELSE 1 END, hno ASC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+</mapper>

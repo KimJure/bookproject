@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.dong.AdminMapper">
+   
+   <!-- 유저관리리스트 검색 및 정렬 및 페이징 -->
+    <select id="getTotalCount" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM member
+        WHERE state in (1,2,3)
+    </select>
+
+   <select id="getListByRange" resultType="kr.co.dong.member.MemberDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM member
+     WHERE state in (1,2,3)
+   <if test="keyword != null and keyword != ''">
+    AND (
+    <if test="division != null and division == 'id'">
+        id LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    <if test="division != null and division == 'name'">
+        name LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    <if test="division != null and division == 'state'">
+        state LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    <if test="division != null and division == 'authority'">
+        authority LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    <if test="division != null and division == 'joindate'">
+        joindate LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    )
+</if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'id'">id ASC</when>
+        <when test="sortBy eq 'name'">name ASC</when>
+        <when test="sortBy eq 'state'">state ASC</when>
+        <when test="sortBy eq 'authority'">authority ASC</when>
+        <when test="sortBy eq 'idDesc'">id DESC</when>
+        <when test="sortBy eq 'nameDesc'">name DESC</when>
+        <when test="sortBy eq 'stateDesc'">state DESC</when>
+        <when test="sortBy eq 'dormancy'">CASE WHEN state = 2 THEN 0 ELSE 1 END, state DESC</when>
+        <when test="sortBy eq 'authorityDesc'">authority DESC</when>
+        <when test="sortBy eq 'joindateDesc'">joindate DESC</when>
+        <otherwise>CASE WHEN state = 1 THEN 0 ELSE 1 END, state DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+
+
+<!-- 전체도서관리 리스트 -->
+<select id="getTotalCount2" resultType="int" parameterType="java.util.Map">
+        SELECT COUNT(*) as totalCount
+        FROM book
+        WHERE bookorigin In (1,2)
+    </select>
+
+   <select id="getListByRange2" resultType="kr.co.dong.book.bookDTO" parameterType="java.util.Map">
+
+    SELECT *
+    FROM book
+    WHERE bookorigin In (1,2)
+
+     <if test="keyword != null and keyword != ''">
+        AND (
+            booknum LIKE CONCAT('%', #{keyword}, '%')
+            OR bookname LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'booknum'">booknum ASC</when>
+        <when test="sortBy eq 'bookname'">bookname ASC</when>
+        <when test="sortBy eq 'booknumDesc'">booknum DESC</when>
+        <when test="sortBy eq 'booknameDesc'">bookname DESC</when>
+        <when test="sortBy eq 'possible'">bookcnt DESC</when>
+        <when test="sortBy eq 'impossible'">bookcnt ASC</when>
+        <when test="sortBy eq 'regdate'">regdate ASC</when>
+        <when test="sortBy eq 'regdateDesc'">regdate DESC</when>
+        <when test="sortBy eq 'defalut'">booknum DESC</when>
+        <otherwise>booknum DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+
+
+
+
+<!-- 게시판관리리스트 검색 및 정렬 및 페이징 -->
+ <select id="getTotalCount1" resultType="int" parameterType="map">
+        SELECT COUNT(*) as totalCount
+        FROM board
+          WHERE del in (1,2)
+    </select>
+
+   <select id="getListByRange1" resultType="kr.co.dong.board.BoardDTO" parameterType="java.util.Map">
+    SELECT *
+    FROM board
+    WHERE del in (1,2)
+         <if test="keyword != null and keyword != ''">
+        AND (
+            id LIKE CONCAT('%', #{keyword}, '%')
+            OR title LIKE CONCAT('%', #{keyword}, '%')
+            OR type LIKE CONCAT('%', #{keyword}, '%')
+            OR regdate LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </if>
+    ORDER BY
+    <choose>
+        <when test="sortBy eq 'id'">id ASC</when>
+        <when test="sortBy eq 'title'">title ASC</when>
+        <when test="sortBy eq 'idDesc'">id DESC</when>
+        <when test="sortBy eq 'titleDesc'">title DESC</when>
+        <when test="sortBy eq 'regdate'">regdate ASC</when>
+        <when test="sortBy eq 'regdateDesc'">regdate DESC</when>
+        <when test="sortBy eq 'open'">del ASC</when>
+        <when test="sortBy eq 'delete'">del DESC</when>
+        <when test="sortBy eq 'private'">CASE WHEN del = 2 THEN 0 ELSE 1 END, del DESC</when>
+        <when test="sortBy eq 'default'">CASE WHEN del = 1 THEN 0 ELSE 1 END, del DESC</when>
+        <otherwise>CASE WHEN del = 1 THEN 0 ELSE 1 END, del DESC</otherwise>
+    </choose>
+    LIMIT #{startIdx}, #{endIdx}
+</select>
+   
+   
+   <!-- 유저 상세 조회 -->
+   <select id="userDetail" parameterType="java.lang.String" resultType="kr.co.dong.member.MemberDTO">
+      select *
+      from member
+      where id= #{id}
+      limit 1;
+   </select>
+   
+   
+   <!-- 유저 수정 -->
+   <update id="userUpdate" parameterType="kr.co.dong.member.MemberDTO">
+  UPDATE member
+  SET pw = #{pw},
+      email = #{email},
+      birth = #{birth},
+      name = #{name},
+      tel = #{tel},
+      state = #{state},
+      authority = #{authority},
+      roadAddress = #{roadAddress},
+      jibunAddress = #{jibunAddress},
+      detailAddress = #{detailAddress},
+      extraAddress = #{extraAddress},
+      postcode = #{postcode}
+  WHERE id = #{id}
+  limit 1;
+</update>
+
+
+   <!-- 유저 탈퇴 -->
+   <update id="userDelete" parameterType="kr.co.dong.member.MemberDTO">
+        update member
+        set state = 3
+        where id = #{id};
+    </update>
+    
+    
+    <!-- 유저 휴면해제 -->
+    <update id="userRelease" parameterType="kr.co.dong.member.MemberDTO">
+        update member
+        set state = 1
+        where id = #{id};
+    </update>
+    
+    
+    <!-- 유저  삭제 -->
+    <update id="userDrop" parameterType="kr.co.dong.member.MemberDTO">
+        update member
+        set state = 4
+        where id = #{id};
+    </update>
+   
+      <!-- 문의 답글 -->
+   <update id="answerContent" parameterType="kr.co.dong.help.HelpDTO">
+  UPDATE help_board
+  SET recomment = #{recomment},
+       rehdate = now(),
+       state = 2
+  WHERE hno = #{hno}
+</update>
+
+   <!-- 문의 삭제 -->
+      <update id="helpDelete" parameterType="kr.co.dong.help.HelpDTO">
+     UPDATE help_board
+     SET state = 3
+     WHERE hno = #{hno}
+   </update>
+   
+   <!-- 도서 삭제 -->
+      <update id="bookDelete" parameterType="kr.co.dong.book.bookDTO">
+     UPDATE book
+     SET bookorigin = 3
+     WHERE booknum = #{booknum}
+   </update>
+   
+
+   <!-- 책 상세 조회 -->
+   <select id="bookUpdateview" parameterType="java.lang.String" resultType="kr.co.dong.book.bookDTO">
+      select *
+      from book
+      where booknum= #{booknum}
+      limit 1;
+   </select>
+   
+   
+   </mapper>

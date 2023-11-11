@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace = "kr.co.dong.MemberMapper">
+
+   <select id="login" parameterType="java.util.Map" resultType="java.util.Map">
+        select id, state, authority, pw
+        from Member
+        where id = #{id}
+        and pw = #{pw}
+    </select>
+    
+    <insert id="joinMember"  parameterType="kr.co.dong.member.MemberDTO">
+    
+    insert into member (id, pw, name, email, tel, birth, postcode, roadAddress, jibunAddress, detailAddress, extraAddress, agree, joindate, state, authority)
+    VALUES (#{id}, #{pw}, #{name}, #{email}, #{tel}, #{birth}, #{postcode}, #{roadAddress}, #{jibunAddress}, #{detailAddress}, #{extraAddress}, #{agree}, curdate(), 1, 1)
+
+</insert>
+
+<!-- 중복 ID 검사 -->
+<select id="checkDuplicateId" resultType="java.lang.Integer">
+  SELECT COUNT(*) FROM member WHERE id = #{id}
+</select>
+
+</mapper>
